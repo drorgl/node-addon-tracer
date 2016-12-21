@@ -12,6 +12,9 @@
 
 #include <memory>
 #include <functional>
+#include <iterator>
+#include <sstream>
+#include <set>
 #include "threadsafe_queue.h"
 #include "uvasync.h"
 
@@ -56,7 +59,6 @@ private:
 
 	/*Logger Ends*/
 
-
 	static void flush_log_messages();
 
 public:
@@ -78,6 +80,21 @@ public:
 
 	static void Log(std::string module, LogLevel loglevel, std::string message);
 	static void Log(std::string module, LogLevel loglevel, std::function<std::string()> message);
+
+	template <typename T>
+	static std::string join(const std::vector<T>& vec, std::function<std::string(T)> get, const char* delim) {
+		std::string ret;
+		for (auto &&v : vec) {
+			if (v != *vec.begin()) {
+				ret += delim;
+			}
+			ret += get(v);
+		}
+		return ret;
+	}
+
+	static std::string join(const std::vector<std::string>& vec, const char* delim);
+	static std::string join(const std::set<std::string>& set, const char* delim);
 };
 
 #endif

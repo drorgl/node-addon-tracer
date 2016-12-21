@@ -9,15 +9,20 @@ std::shared_ptr<uvasync> tracer::_logger_async;
 unsigned int tracer::batch_length;
 
 void tracer::Log(std::string module, LogLevel loglevel, std::string message) {
-	if (!_logger.IsEmpty()) {
-		if (loglevel >= tracer::log_level) {
-			_log_messages.enqueue(tracer::log_message{ module, loglevel, message });
+	//TODO: find a way to change this magic number on startup
+	if (_log_messages.length() > 1000) {
+		log_message lm;
+		_log_messages.dequeue(lm);
+	}
 
-			if (_logger_async != nullptr) {
-				_logger_async->signal();
-			}
+	if (loglevel >= tracer::log_level) {
+		_log_messages.enqueue(tracer::log_message{ module, loglevel, message });
+
+		if (_logger_async != nullptr) {
+			_logger_async->signal();
 		}
 	}
+
 }
 
 void tracer::Log(std::string module, LogLevel loglevel, std::function<std::string()> message) {
@@ -31,7 +36,7 @@ void tracer::Init(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 	Nan::SetMethod(target, "RegisterLogger", RegisterLogger);
 	Nan::SetMethod(target, "Log", Log);
 	Nan::SetMethod(target, "Flush", Flush);
-	Nan::SetAccessor (target, Nan::New("log_level").ToLocalChecked(), log_level_getter, log_level_setter);
+	Nan::SetAccessor(target, Nan::New("log_level").ToLocalChecked(), log_level_getter, log_level_setter);
 	Nan::SetAccessor(target, Nan::New("batch_length").ToLocalChecked(), batch_length_getter, batch_length_setter);
 	_logger_async = std::make_shared<uvasync>(_async_logger_callback);
 	node::AtExit(deinit);
@@ -45,7 +50,7 @@ NAN_GETTER(tracer::log_level_getter) {
 }
 
 NAN_SETTER(tracer::batch_length_setter) {
-	tracer::batch_length= (unsigned int)value->IntegerValue();
+	tracer::batch_length = (unsigned int)value->IntegerValue();
 	if (tracer::batch_length < 1) {
 		tracer::batch_length = 1;
 	}
@@ -112,4 +117,18 @@ void tracer::_async_logger_callback(uv_async_t *handle/*, int status UNUSED*/)
 {
 	Nan::HandleScope scope;
 	tracer::flush_log_messages();
+}
+
+std::string tracer::join(const std::vector<std::string>& vec, const char* delim)
+{
+	std::stringstream res;
+	std::copy(vec.begin(), vec.end(), std::ostream_iterator<std::string>(res, delim));
+	return res.str();
+}
+
+std::string tracer::join(const std::set<std::string>& set, const char* delim)
+{
+	std::stringstream res;
+	std::copy(set.begin(), set.end(), std::ostream_iterator<std::string>(res, delim));
+	return res.str();
 }
