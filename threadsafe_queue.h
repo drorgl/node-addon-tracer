@@ -45,6 +45,7 @@ public:
 		std::lock_guard<std::mutex> lock(m);
 		std::queue<T> empty;
 		std::swap(_queue, empty);
+		_queue_length = 0;
 	}
 };
 

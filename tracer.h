@@ -93,6 +93,18 @@ public:
 		return ret;
 	}
 
+	template <typename T>
+	static std::string join(const std::set<T>& set, std::function<std::string(T)> get, const char* delim) {
+		std::string ret;
+		for (auto &&v : set) {
+			if (v != *set.begin()) {
+				ret += delim;
+			}
+			ret += get(v);
+		}
+		return ret;
+	}
+
 	static std::string join(const std::vector<std::string>& vec, const char* delim);
 	static std::string join(const std::set<std::string>& set, const char* delim);
 };

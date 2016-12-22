@@ -10,9 +10,9 @@ unsigned int tracer::batch_length;
 
 void tracer::Log(std::string module, LogLevel loglevel, std::string message) {
 	//TODO: find a way to change this magic number on startup
-	if (_log_messages.length() > 1000) {
-		log_message lm;
-		_log_messages.dequeue(lm);
+	if (_log_messages.length() > 10000) {
+		_log_messages.clear();
+		_log_messages.enqueue(tracer::log_message{ "tracer", LogLevel::WARN, "Log buffer is full, overwriting..."});
 	}
 
 	if (loglevel >= tracer::log_level) {
@@ -98,8 +98,7 @@ void tracer::flush_log_messages() {
 
 	auto max_in_batch = tracer::batch_length;
 
-	while (_log_messages.dequeue(lm) && (max_in_batch > 0))
-	{
+	while (_log_messages.dequeue(lm) && (max_in_batch > 0) && (lm.level >= tracer::log_level)) {
 		max_in_batch--;
 
 		if (!callback->IsEmpty() && !_logger.IsEmpty() && _logger_async != nullptr && _logger_async->isActive()) {
@@ -109,6 +108,12 @@ void tracer::flush_log_messages() {
 				Nan::New(lm.message).ToLocalChecked()
 			};
 			callback->Call(3, argv);
+		}
+	}
+
+	if (_log_messages.length() > 0) {
+		if (_logger_async != nullptr) {
+			_logger_async->signal();
 		}
 	}
 }
@@ -121,14 +126,10 @@ void tracer::_async_logger_callback(uv_async_t *handle/*, int status UNUSED*/)
 
 std::string tracer::join(const std::vector<std::string>& vec, const char* delim)
 {
-	std::stringstream res;
-	std::copy(vec.begin(), vec.end(), std::ostream_iterator<std::string>(res, delim));
-	return res.str();
+	return tracer::join<std::string>(vec, [](std::string &v) {return v; }, delim);
 }
 
 std::string tracer::join(const std::set<std::string>& set, const char* delim)
 {
-	std::stringstream res;
-	std::copy(set.begin(), set.end(), std::ostream_iterator<std::string>(res, delim));
-	return res.str();
+	return tracer::join<std::string>(set, [](std::string &v) {return v; }, delim);
 }
