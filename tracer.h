@@ -78,8 +78,10 @@ public:
 	static NAN_GETTER(batch_length_getter);
 	static unsigned int batch_length;
 
-	static void Log(std::string module, LogLevel loglevel, std::string message);
-	static void Log(std::string module, LogLevel loglevel, std::function<std::string()> message);
+	static unsigned int buffer_length;
+
+	static void Log(std::string&& module, LogLevel loglevel, std::string&& message);
+	static void Log(std::string&& module, LogLevel loglevel, std::function<std::string()> message);
 
 	template <typename T>
 	static std::string join(const std::vector<T>& vec, std::function<std::string(T)> get, const char* delim) {

@@ -7,15 +7,44 @@ threadsafe_queue<tracer::log_message> tracer::_log_messages;
 std::shared_ptr<uvasync> tracer::_logger_async;
 
 unsigned int tracer::batch_length;
+unsigned int tracer::buffer_length;
 
-void tracer::Log(std::string module, LogLevel loglevel, std::string message) {
-	//TODO: find a way to change this magic number on startup
-	if (_log_messages.length() > 10000) {
-		_log_messages.clear();
-		_log_messages.enqueue(tracer::log_message{ "tracer", LogLevel::WARN, "Log buffer is full, overwriting..."});
+
+template<typename T>
+static T get_env(std::string&& key) {
+	throw std::runtime_error(std::string("not implemented"));
+}
+
+template<>
+static std::string get_env<std::string>(std::string&& key) {
+	auto env_value = getenv(key.c_str());
+	if (env_value == NULL) {
+		return "";
+	}
+	return std::string(env_value);
+}
+
+
+template<>
+static int get_env<int>(std::string&& key) {
+	auto env_value = getenv(key.c_str());
+	
+	if (env_value == NULL) {
+		return 0;
 	}
 
+	return std::stoi(std::string(env_value));
+}
+
+
+
+void tracer::Log(std::string&& module, LogLevel loglevel, std::string&& message) {
 	if (loglevel >= tracer::log_level) {
+		if (_log_messages.length() > tracer::buffer_length) {
+			_log_messages.clear();
+			_log_messages.enqueue(tracer::log_message{ "tracer", LogLevel::WARN, "Log buffer is full, overwriting..." });
+		}
+
 		_log_messages.enqueue(tracer::log_message{ module, loglevel, message });
 
 		if (_logger_async != nullptr) {
@@ -25,14 +54,42 @@ void tracer::Log(std::string module, LogLevel loglevel, std::string message) {
 
 }
 
-void tracer::Log(std::string module, LogLevel loglevel, std::function<std::string()> message) {
+void tracer::Log(std::string&& module, LogLevel loglevel, std::function<std::string()> message) {
 	if (loglevel >= tracer::log_level) {
-		tracer::Log(module, loglevel, message());
+		tracer::Log(std::move(module), loglevel, std::move(message()));
 	}
 }
 
 void tracer::Init(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
-	tracer::batch_length = 1000;
+	tracer::batch_length = get_env<int>("TRACER_BATCH_LENGTH");
+	if (tracer::batch_length  < 1) {
+		tracer::batch_length = 1000;
+	}
+
+	tracer::buffer_length = get_env<int>("TRACER_BUFFER_LENGTH");
+	if (tracer::buffer_length < 1) {
+		tracer::buffer_length = 1000;
+	}
+
+	auto log_level_string = get_env<std::string>("TRACER_LOG_LEVEL");
+
+	tracer::log_level = LogLevel::WARN;
+	
+
+	if (log_level_string == "TRACE" || log_level_string == "0") {
+		tracer::log_level = LogLevel::TRACE;
+	} else if (log_level_string == "DEBUG" || log_level_string == "1") {
+		tracer::log_level = LogLevel::DEBUG;
+	} else 	if (log_level_string == "INFO" || log_level_string == "2"){
+		tracer::log_level = LogLevel::INFO;
+	} else if (log_level_string == "WARN" || log_level_string == "3") {
+		tracer::log_level = LogLevel::WARN;
+	} else if (log_level_string == "ERROR" || log_level_string == "4"){
+		tracer::log_level = LogLevel::ERROR;
+	} else if (log_level_string == "FATAL" || log_level_string == "5") {
+		tracer::log_level = LogLevel::FATAL;
+	}
+
 	Nan::SetMethod(target, "RegisterLogger", RegisterLogger);
 	Nan::SetMethod(target, "Log", Log);
 	Nan::SetMethod(target, "Flush", Flush);
@@ -64,7 +121,7 @@ void tracer::deinit(void*) {
 }
 
 NAN_METHOD(tracer::Log) {
-	tracer::Log(*Nan::Utf8String(info[0]), (LogLevel)info[1]->IntegerValue(), *Nan::Utf8String(info[2]));
+	tracer::Log(std::string(*Nan::Utf8String(info[0])), (LogLevel)info[1]->IntegerValue(),std::string( *Nan::Utf8String(info[2])));
 }
 
 NAN_METHOD(tracer::Flush) {

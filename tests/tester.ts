@@ -115,6 +115,8 @@ if (addon == null) {
     console.log("debug:", aoDebug);
 }
 
+addon.log_level = tracer.LogLevel.TRACE;
+
 function timeme(func: Function) : string {
     let startTime = process.hrtime();
     func();
@@ -127,8 +129,7 @@ function timeme(func: Function) : string {
 
 tape('check custom logger in tester.cc', function (t) {
     let numberOfLogMessages = 6;
-
-
+    
 
     addon.RegisterLogger((module, logLevel, message) => {
         //console.log("log", module, logLevel, message);
