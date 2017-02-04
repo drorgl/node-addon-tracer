@@ -83,6 +83,20 @@ public:
 	static void Log(std::string&& module, LogLevel loglevel, std::string&& message);
 	static void Log(std::string&& module, LogLevel loglevel, std::function<std::string()> message);
 
+
+	template <typename Container, typename Functor>
+	static std::string join(const Container& container, Functor &&get, const char* delim) {
+		std::string ret;
+		for (auto &&v : container) {
+			if (v != *std::begin(container)) {
+				ret += delim;
+			}
+			ret += get(v);
+		}
+		return ret;
+	}
+
+	
 	template <typename T>
 	static std::string join(const std::vector<T>& vec, std::function<std::string(T)> get, const char* delim) {
 		std::string ret;
