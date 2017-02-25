@@ -11,12 +11,12 @@ unsigned int tracer::buffer_length;
 
 
 template<typename T>
-static T get_env(std::string&& key) {
+T get_env(std::string&& key) {
 	throw std::runtime_error(std::string("not implemented"));
 }
 
 template<>
-static std::string get_env<std::string>(std::string&& key) {
+std::string get_env<std::string>(std::string&& key) {
 	auto env_value = getenv(key.c_str());
 	if (env_value == NULL) {
 		return "";
@@ -26,7 +26,7 @@ static std::string get_env<std::string>(std::string&& key) {
 
 
 template<>
-static int get_env<int>(std::string&& key) {
+int get_env<int>(std::string&& key) {
 	auto env_value = getenv(key.c_str());
 	
 	if (env_value == NULL) {
@@ -183,10 +183,10 @@ void tracer::_async_logger_callback(uv_async_t *handle/*, int status UNUSED*/)
 
 std::string tracer::join(const std::vector<std::string>& vec, const char* delim)
 {
-	return tracer::join<std::string>(vec, [](std::string &v) {return v; }, delim);
+	return tracer::join(vec, [](const std::string &v) {return v; }, delim);
 }
 
 std::string tracer::join(const std::set<std::string>& set, const char* delim)
 {
-	return tracer::join<std::string>(set, [](std::string &v) {return v; }, delim);
+	return tracer::join(set, [](const std::string &v) {return v; }, delim);
 }
