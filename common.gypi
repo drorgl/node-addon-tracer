@@ -28,7 +28,8 @@
 			}],
 			
 			['OS in "linux freebsd openbsd solaris android aix"', {
-					'cflags_cc!' : ['-fno-rtti', '-fno-exceptions']
+					'cflags_cc!' : ['-fno-rtti', '-fno-exceptions'],
+					'cflags_cc' : ['--std=c++14']
 			}],
 			['OS=="mac"', {
 					'xcode_settings' : {
