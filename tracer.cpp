@@ -93,8 +93,15 @@ void tracer::Init(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 	Nan::SetMethod(target, "RegisterLogger", RegisterLogger);
 	Nan::SetMethod(target, "Log", Log);
 	Nan::SetMethod(target, "Flush", Flush);
-	Nan::SetAccessor(target, Nan::New("log_level").ToLocalChecked(), log_level_getter, log_level_setter);
-	Nan::SetAccessor(target, Nan::New("batch_length").ToLocalChecked(), batch_length_getter, batch_length_setter);
+
+#if NODE_MODULE_VERSION < IOJS_3_0_MODULE_VERSION
+	v8::Local<v8::Object> exports = Nan::New<v8::Object>(target);
+#else
+	v8::Local<v8::Object> exports = target;
+#endif
+
+	Nan::SetAccessor(exports, Nan::New("log_level").ToLocalChecked(), log_level_getter, log_level_setter);
+	Nan::SetAccessor(exports, Nan::New("batch_length").ToLocalChecked(), batch_length_getter, batch_length_setter);
 	_logger_async = std::make_shared<uvasync>(_async_logger_callback);
 	node::AtExit(deinit);
 }
@@ -175,7 +182,11 @@ void tracer::flush_log_messages() {
 	}
 }
 
+#if NODE_MODULE_VERSION >= NODE_0_12_MODULE_VERSION
 void tracer::_async_logger_callback(uv_async_t *handle/*, int status UNUSED*/)
+#else
+void tracer::_async_logger_callback(uv_async_t *handle, int status /*UNUSED*/)
+#endif
 {
 	Nan::HandleScope scope;
 	tracer::flush_log_messages();
