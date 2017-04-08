@@ -2,7 +2,7 @@
   "name": "node-addon-tracer",
   "version": "0.2.1",
   "description": "Node Addon Tracer",
-  "main": "index.js",
+  "main": "include_dirs.js",
   "scripts": {
     "configure": "node-gyp configure && node-gyp build",
     "install": "echo call configure to build",

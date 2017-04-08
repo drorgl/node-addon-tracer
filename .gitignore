@@ -1,5 +1,8 @@
 build
 node_modules/
 npm-debug.log*
-*.js
-*.js.map
+tracer.js
+tracer.js.map
+
+/tests/tester.js
+/tests/tester.js.map
