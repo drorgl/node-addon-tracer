@@ -4,8 +4,8 @@
   "description": "Node Addon Tracer",
   "main": "index.js",
   "scripts": {
-    "configure": "node-gyp configure",
-    "install": "node-gyp configure; node-gyp build",
+    "configure": "node-gyp configure && node-gyp build",
+    "install": "echo call configure to build",
     "test": "tsc && ts-node tests/tester.ts"
   },
   "author": "Dror Gluska",

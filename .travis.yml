@@ -5,6 +5,7 @@ node_js:
   - "7.0.0"
 install:
   - npm install
+  - npm run configure
 script:
   - npm test
 env:
