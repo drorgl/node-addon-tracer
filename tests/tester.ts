@@ -8,8 +8,8 @@ import chalk = require("chalk");
 import util = require("util");
 
 
-let errorColor = chalk.red.bold;
-let okColor = chalk.green.bold;
+let errorColor = chalk.default.red.bold;
+let okColor = chalk.default.green.bold;
 var level = 0;
 
 function logger(module, level, message) {
