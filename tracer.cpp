@@ -1,5 +1,7 @@
 #include "tracer.h"
 
+namespace node_addon_tracer {
+
 Nan::Persistent<v8::Function> tracer::_logger;
 LogLevel tracer::log_level;
 threadsafe_queue<tracer::log_message> tracer::_log_messages;
@@ -200,4 +202,5 @@ std::string tracer::join(const std::vector<std::string>& vec, const char* delim)
 std::string tracer::join(const std::set<std::string>& set, const char* delim)
 {
 	return tracer::join(set, [](const std::string &v) {return v; }, delim);
+}
 }

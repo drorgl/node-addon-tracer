@@ -33,77 +33,78 @@
 //register logging callback from nodejs to library
 //remove logging callback from nodejs
 
+namespace node_addon_tracer {
 
+	class tracer {
+	private:
+		struct log_message
+		{
+			std::string module;
+			LogLevel level;
+			std::string message;
+		};
 
-class tracer {
-private:
-	struct log_message
-	{
-		std::string module;
-		LogLevel level;
-		std::string message;
-	};
+		/*Logger Begin*/
 
-	/*Logger Begin*/
-
-	/*v8 logger callback pointer*/
-	static Nan::Persistent<v8::Function> _logger;
-	/*ffmpeg logger callback*/
-	static void _ffmpeg_logger(std::string module, int level, std::string message);
-	/*async callback for sending the messages on the main event loop*/
+		/*v8 logger callback pointer*/
+		static Nan::Persistent<v8::Function> _logger;
+		/*ffmpeg logger callback*/
+		static void _ffmpeg_logger(std::string module, int level, std::string message);
+		/*async callback for sending the messages on the main event loop*/
 #if NODE_MODULE_VERSION >= NODE_0_12_MODULE_VERSION
-	static void _async_logger_callback(uv_async_t *handle/*, int status UNUSED*/);
+		static void _async_logger_callback(uv_async_t *handle/*, int status UNUSED*/);
 #else
-	static void _async_logger_callback(uv_async_t *handle, int status /*UNUSED*/);
+		static void _async_logger_callback(uv_async_t *handle, int status /*UNUSED*/);
 #endif
 
 
-	/*a queue for log messages*/
-	static threadsafe_queue<log_message> _log_messages;
-	/*uv async synchronizer for main event loop*/
-	static std::shared_ptr<uvasync> _logger_async;
+		/*a queue for log messages*/
+		static threadsafe_queue<log_message> _log_messages;
+		/*uv async synchronizer for main event loop*/
+		static std::shared_ptr<uvasync> _logger_async;
 
-	/*Logger Ends*/
+		/*Logger Ends*/
 
-	static void flush_log_messages();
+		static void flush_log_messages();
 
-public:
+	public:
 
-	static void Init(v8::Handle<v8::Object> target);
-	static void deinit(void*);
-	static NAN_METHOD(RegisterLogger);
-	static NAN_METHOD(Log);
-	static NAN_METHOD(Flush);
-	
-
-	static NAN_SETTER(log_level_setter);
-	static NAN_GETTER(log_level_getter);
-	static LogLevel log_level;
-
-	static NAN_SETTER(batch_length_setter);
-	static NAN_GETTER(batch_length_getter);
-	static unsigned int batch_length;
-
-	static unsigned int buffer_length;
-
-	static void Log(std::string&& module, LogLevel loglevel, std::string&& message);
-	static void Log(std::string&& module, LogLevel loglevel, std::function<std::string()> message);
+		static void Init(v8::Handle<v8::Object> target);
+		static void deinit(void*);
+		static NAN_METHOD(RegisterLogger);
+		static NAN_METHOD(Log);
+		static NAN_METHOD(Flush);
 
 
-	template <typename Container, typename Functor>
-	static std::string join(const Container& container, Functor &&get, const char* delim) {
-		std::string ret;
-		for (auto &&v : container) {
-			if (v != *std::begin(container)) {
-				ret += delim;
+		static NAN_SETTER(log_level_setter);
+		static NAN_GETTER(log_level_getter);
+		static LogLevel log_level;
+
+		static NAN_SETTER(batch_length_setter);
+		static NAN_GETTER(batch_length_getter);
+		static unsigned int batch_length;
+
+		static unsigned int buffer_length;
+
+		static void Log(std::string&& module, LogLevel loglevel, std::string&& message);
+		static void Log(std::string&& module, LogLevel loglevel, std::function<std::string()> message);
+
+
+		template <typename Container, typename Functor>
+		static std::string join(const Container& container, Functor &&get, const char* delim) {
+			std::string ret;
+			for (auto &&v : container) {
+				if (v != *std::begin(container)) {
+					ret += delim;
+				}
+				ret += get(v);
 			}
-			ret += get(v);
+			return ret;
 		}
-		return ret;
-	}
 
-	static std::string join(const std::vector<std::string>& vec, const char* delim);
-	static std::string join(const std::set<std::string>& set, const char* delim);
-};
+		static std::string join(const std::vector<std::string>& vec, const char* delim);
+		static std::string join(const std::set<std::string>& set, const char* delim);
+	};
 
+}
 #endif

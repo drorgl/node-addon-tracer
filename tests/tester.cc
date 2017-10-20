@@ -1,5 +1,7 @@
 #include "../tracer.h"
 
+using namespace node_addon_tracer;
+
 NAN_METHOD(LogTrace) {
 	tracer::Log("tester", LogLevel::TRACE, [&info]() {return *Nan::Utf8String(info[0]); });
 }
