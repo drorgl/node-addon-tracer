@@ -6,7 +6,7 @@
   "scripts": {
     "configure": "npx node-gyp configure && npx node-gyp build",
     "install": "echo call configure to build",
-    "test": "tsc && ts-node tests/tester.ts"
+    "test": "npx tsc && npx ts-node tests/tester.ts"
   },
   "author": "Dror Gluska",
   "license": "MIT",
