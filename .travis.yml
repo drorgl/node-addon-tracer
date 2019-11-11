@@ -1,8 +1,7 @@
 sudo: false
 language: node_js
 node_js:
-  - "6.5"
-  - "7.0.0"
+  - "8.9.0"
 install:
   - npm install
   - npm run configure
