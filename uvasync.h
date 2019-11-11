@@ -7,11 +7,10 @@
 
 class uvasync {
 private:
-	static std::unordered_set<uv_async_t*> _inuseasyncs;
 	uv_async_t * _async_inst;
 	std::atomic<bool> _is_active;
 public:
-	uvasync(uv_async_cb callback);
+	explicit uvasync(uv_async_cb callback);
 
 	bool isActive();
 

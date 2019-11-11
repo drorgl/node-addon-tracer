@@ -42,8 +42,7 @@ int get_env<int>(std::string&& key) {
 
 void tracer::Log(std::string&& module, LogLevel loglevel, std::string&& message) {
 	if (loglevel >= tracer::log_level) {
-		if (_log_messages.length() > tracer::buffer_length) {
-			_log_messages.clear();
+		if (_log_messages.length() >= tracer::buffer_length) {
 			_log_messages.enqueue(tracer::log_message{ "tracer", LogLevel::WARN, "Log buffer is full, overwriting..." });
 		}
 
@@ -72,6 +71,8 @@ void tracer::Init(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 	if (tracer::buffer_length < 1) {
 		tracer::buffer_length = 1000;
 	}
+
+	_log_messages.max_length(tracer::buffer_length);
 
 	auto log_level_string = get_env<std::string>("TRACER_LOG_LEVEL");
 
@@ -104,6 +105,7 @@ void tracer::Init(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
 	Nan::SetAccessor(exports, Nan::New("log_level").ToLocalChecked(), log_level_getter, log_level_setter);
 	Nan::SetAccessor(exports, Nan::New("batch_length").ToLocalChecked(), batch_length_getter, batch_length_setter);
+	Nan::SetAccessor(exports, Nan::New("buffer_length").ToLocalChecked(), buffer_length_getter, buffer_length_setter);
 	_logger_async = std::make_shared<uvasync>(_async_logger_callback);
 	node::AtExit(deinit);
 }
@@ -123,6 +125,16 @@ NAN_SETTER(tracer::batch_length_setter) {
 }
 NAN_GETTER(tracer::batch_length_getter) {
 	info.GetReturnValue().Set(tracer::batch_length);
+}
+
+NAN_SETTER(tracer::buffer_length_setter) {
+	tracer::buffer_length = (unsigned int)value->IntegerValue();
+	if (tracer::buffer_length < 1) {
+		tracer::buffer_length = 1;
+	}
+}
+NAN_GETTER(tracer::buffer_length_getter) {
+	info.GetReturnValue().Set(tracer::buffer_length);
 }
 
 void tracer::deinit(void*) {

@@ -6,3 +6,5 @@ tracer.js.map
 
 /tests/tester.js
 /tests/tester.js.map
+/package-lock.json
+/.vscode

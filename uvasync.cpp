@@ -1,10 +1,7 @@
 #include "uvasync.h"
 
-std::unordered_set<uv_async_t*> uvasync::_inuseasyncs;
-
-uvasync::uvasync(uv_async_cb callback)
+uvasync::uvasync(uv_async_cb callback):_is_active(false)
 {
-	_is_active = false;
 	_async_inst = new uv_async_t();
 	uv_async_init(uv_default_loop(), _async_inst, callback);
 
@@ -23,8 +20,6 @@ bool uvasync::isActive() {
 void uvasync::signal() {
 	if (_is_active == true) {
 		uv_async_send(_async_inst);
-		//uv_signal_cb()
-			//uv_prepare_cb()
 	}
 }
 
@@ -35,7 +30,6 @@ uvasync::~uvasync() {
 
 void uvasync::close_handler(uv_handle_t* handle)
 {
-	_inuseasyncs.erase((uv_async_t*)handle);
 	delete (uv_async_t*)handle;
 }
 

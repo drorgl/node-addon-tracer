@@ -3,13 +3,13 @@
 import * as tracer from "../tracer"
 
 console.log("starting");
-import tape = require("tape");
-import chalk = require("chalk");
-import util = require("util");
+import * as tape from "tape";
+import * as chalk from "chalk";
+import * as util from "util";
 
 
-let errorColor = chalk.default.red.bold;
-let okColor = chalk.default.green.bold;
+let errorColor = chalk.red.bold;
+let okColor = chalk.green.bold;
 var level = 0;
 
 function logger(module, level, message) {
@@ -30,9 +30,9 @@ var results = {
     failed: 0
 };
 
-var tapestream = tape.createStream({ objectMode: true });
+var tapeStream = tape.createStream({ objectMode: true });
 
-tapestream.on('data', (row) => {
+tapeStream.on('data', (row) => {
     //console.log(JSON.stringify(row));
     if (typeof row == typeof "") {
         console.log(tablevel() + row);
@@ -62,21 +62,21 @@ tapestream.on('data', (row) => {
     }
 });
 
-tapestream.on('end', (r) => {
+tapeStream.on('end', (r) => {
     console.log("passed:", results.passed);
     console.log("failed:", results.failed);
 });
 
 
 
-function showObject(tobj) {
-    let objstr = JSON.stringify(tobj, null, '\t');
+function showObject(tObj) {
+    let objStr = JSON.stringify(tObj, null, '\t');
     let showObjectContents = false;
     if (showObjectContents) {
-        console.log(objstr);
+        console.log(objStr);
     }
     else {
-        console.log("object size: " + objstr.length);
+        console.log("object size: " + objStr.length);
     }
 }
 
@@ -117,7 +117,7 @@ if (addon == null) {
 
 addon.log_level = tracer.LogLevel.TRACE;
 
-function timeme(func: Function) : string {
+function timeMe(func: Function) : string {
     let startTime = process.hrtime();
     func();
     let endTime = process.hrtime(startTime);
@@ -135,7 +135,7 @@ tape('check custom logger in tester.cc', function (t) {
         //console.log("log", module, logLevel, message);
         numberOfLogMessages--;
     });//, "module", tracer.LogLevel.TRACE);
-    let time_for_logging = timeme(() => {
+    let time_for_logging = timeMe(() => {
         addon.LogDebug("test", "message");
         addon.LogTrace("test", "message");
         addon.LogInfo("test", "message");
@@ -171,7 +171,7 @@ tape('check custom logger in tester.cc filter Warnings and up', function (t) {
         //console.log("log", module, logLevel, message);
         numberOfLogMessages--;
     });//, "module", tracer.LogLevel.TRACE);
-    let time_for_logging = timeme(() => {
+    let time_for_logging = timeMe(() => {
         addon.log_level = tracer.LogLevel.WARN;
         addon.LogDebug("test", "message");
         addon.LogTrace("test", "message");
@@ -208,7 +208,7 @@ tape('logger without flushing', function (t) {
         //console.log("log", module, logLevel, message);
         logMessagesLeft--;
     });//, "module", tracer.LogLevel.TRACE);
-    let time_for_logging = timeme(() => {
+    let time_for_logging = timeMe(() => {
         for (let i = 0; i < numberOfLogMessages; i++) {
             addon.Log("test", tracer.LogLevel.ERROR, "message");
         }
@@ -241,7 +241,7 @@ tape('logger with flushing', function (t) {
         //console.log("log", module, logLevel, message);
         logMessagesLeft--;
     });//, "module", tracer.LogLevel.TRACE);
-    let time_for_logging = timeme(() => {
+    let time_for_logging = timeMe(() => {
         for (let i = 0; i < numberOfLogMessages; i++) {
             addon.Log("test", tracer.LogLevel.ERROR, "message");
             addon.Flush();
@@ -278,7 +278,7 @@ tape('logger with small batch length', function (t) {
         //console.log("log", module, logLevel, message);
         logMessagesLeft--;
     });//, "module", tracer.LogLevel.TRACE);
-    let time_for_logging = timeme(() => {
+    let time_for_logging = timeMe(() => {
         for (let i = 0; i < numberOfLogMessages; i++) {
             addon.Log("test", tracer.LogLevel.ERROR, "message");
             addon.Flush();
@@ -294,6 +294,48 @@ tape('logger with small batch length', function (t) {
             let endTime = process.hrtime(startTime);
             t.comment(util.format("start to finish took %d seconds and %d ms", endTime[0], endTime[1] / 1000000));
             t.pass("1000 messages received");
+            t.end();
+        } else {
+            setImmediate(checkFinished);
+        }
+    };
+    checkFinished();
+});
+
+
+
+tape('logger with small buffer length', function (t) {
+    let numberOfLogMessages = 6;
+    addon.batch_length = 6;
+    addon.buffer_length = 1;
+    let logMessagesLeft = numberOfLogMessages;
+
+    let logWarnings = 3;
+
+    addon.RegisterLogger((module, logLevel, message) => {
+        //console.log("log", module, logLevel, message);
+        if (message.indexOf("Log buffer is full") != -1){
+            logWarnings --;
+        }
+        logMessagesLeft--;
+    });
+    
+    let time_for_logging = timeMe(() => {
+        for (let i = 0; i < numberOfLogMessages; i++) {
+            addon.Log("test", tracer.LogLevel.ERROR, "message");
+        }
+        addon.Flush();
+    });
+
+    t.comment("logging time " + time_for_logging);
+
+    let startTime = process.hrtime();
+
+    let checkFinished = () => {
+        if (logMessagesLeft == 0 && logWarnings == 0) {
+            let endTime = process.hrtime(startTime);
+            t.comment(util.format("start to finish took %d seconds and %d ms", endTime[0], endTime[1] / 1000000));
+            t.pass("5 messages received and 3 warnings about log message full");
             t.end();
         } else {
             setImmediate(checkFinished);

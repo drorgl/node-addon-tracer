@@ -27,7 +27,6 @@ NAN_METHOD(LogFatal) {
 }
 
 void init(v8::Handle<v8::Object> target) {
-	//assert(false);
 	tracer::Init(target);
 	
 	Nan::SetMethod(target, "LogTrace", LogTrace);

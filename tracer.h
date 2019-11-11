@@ -48,8 +48,6 @@ namespace node_addon_tracer {
 
 		/*v8 logger callback pointer*/
 		static Nan::Persistent<v8::Function> _logger;
-		/*ffmpeg logger callback*/
-		static void _ffmpeg_logger(std::string module, int level, std::string message);
 		/*async callback for sending the messages on the main event loop*/
 #if NODE_MODULE_VERSION >= NODE_0_12_MODULE_VERSION
 		static void _async_logger_callback(uv_async_t *handle/*, int status UNUSED*/);
@@ -84,6 +82,8 @@ namespace node_addon_tracer {
 		static NAN_GETTER(batch_length_getter);
 		static unsigned int batch_length;
 
+		static NAN_SETTER(buffer_length_setter);
+		static NAN_GETTER(buffer_length_getter);
 		static unsigned int buffer_length;
 
 		static void Log(std::string&& module, LogLevel loglevel, std::string&& message);
