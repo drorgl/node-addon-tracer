@@ -1,0 +1,8 @@
+tests/
+.travis.yml
+appveyor.yml
+build
+.vscode
+drorgl-node-*
+*.js
+*.js.map

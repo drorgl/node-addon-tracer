@@ -6,15 +6,16 @@
   "scripts": {
     "configure": "npx node-gyp configure && npx node-gyp build",
     "install": "echo call configure to build",
-    "test": "npx tsc && npx ts-node tests/tester.ts"
+    "test": "npx tsc && npx ts-node tests/tester.ts",
+    "publish-new": "npm publish --access public"
   },
   "author": "Dror Gluska",
   "license": "MIT",
   "dependencies": {
-    "nan": "^2.14.0",
-    "npx": "^10.2.0"
+    "nan": "^2.14.0"
   },
   "devDependencies": {
+    "npx": "^10.2.0",
     "chalk": "^3.0.0",
     "tape": "^4.11.0",
     "node-gyp": "6.0.1",

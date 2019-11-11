@@ -8,3 +8,4 @@ tracer.js.map
 /tests/tester.js.map
 /package-lock.json
 /.vscode
+drorgl-node-addon-tracer-*
