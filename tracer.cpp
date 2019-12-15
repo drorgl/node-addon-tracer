@@ -111,14 +111,14 @@ void tracer::Init(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 }
 
 NAN_SETTER(tracer::log_level_setter) {
-	tracer::log_level = (LogLevel)value->IntegerValue();
+	tracer::log_level = (LogLevel)Nan::To<int32_t>(value).FromJust();
 }
 NAN_GETTER(tracer::log_level_getter) {
 	info.GetReturnValue().Set((int)tracer::log_level);
 }
 
 NAN_SETTER(tracer::batch_length_setter) {
-	tracer::batch_length = (unsigned int)value->IntegerValue();
+	tracer::batch_length = (unsigned int)Nan::To<uint32_t>(value).FromJust();
 	if (tracer::batch_length < 1) {
 		tracer::batch_length = 1;
 	}
@@ -128,7 +128,7 @@ NAN_GETTER(tracer::batch_length_getter) {
 }
 
 NAN_SETTER(tracer::buffer_length_setter) {
-	tracer::buffer_length = (unsigned int)value->IntegerValue();
+	tracer::buffer_length = (unsigned int)Nan::To<uint32_t>(value).FromJust();
 	if (tracer::buffer_length < 1) {
 		tracer::buffer_length = 1;
 	}
@@ -142,7 +142,7 @@ void tracer::deinit(void*) {
 }
 
 NAN_METHOD(tracer::Log) {
-	tracer::Log(std::string(*Nan::Utf8String(info[0])), (LogLevel)info[1]->IntegerValue(),std::string( *Nan::Utf8String(info[2])));
+	tracer::Log(std::string(*Nan::Utf8String(info[0])), (LogLevel)Nan::To<uint32_t>(info[1]).FromJust(),std::string( *Nan::Utf8String(info[2])));
 }
 
 NAN_METHOD(tracer::Flush) {

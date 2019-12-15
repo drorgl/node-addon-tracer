@@ -26,7 +26,7 @@ NAN_METHOD(LogFatal) {
 	tracer::Log("tester", LogLevel::FATAL, [&info]() {return  *Nan::Utf8String(info[0]); });
 }
 
-void init(v8::Handle<v8::Object> target) {
+void init(v8::Local<v8::Object> target) {
 	tracer::Init(target);
 	
 	Nan::SetMethod(target, "LogTrace", LogTrace);

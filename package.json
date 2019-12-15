@@ -1,6 +1,6 @@
 {
   "name": "@drorgl/node-addon-tracer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Node Addon Tracer",
   "main": "include_dirs.js",
   "scripts": {

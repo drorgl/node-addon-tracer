@@ -67,7 +67,7 @@ namespace node_addon_tracer {
 
 	public:
 
-		static void Init(v8::Handle<v8::Object> target);
+		static void Init(v8::Local<v8::Object> target);
 		static void deinit(void*);
 		static NAN_METHOD(RegisterLogger);
 		static NAN_METHOD(Log);
